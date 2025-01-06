@@ -11,19 +11,37 @@ data Term = IntConstant { intValue :: Int }          -- числовая кон�
 
 -- Для бинарных операций необходима не только реализация, но и адекватные
 -- ассоциативность и приоритет
+
+infixl 7 |+|
 (|+|) :: Term -> Term -> Term
-(|+|) = notImplementedYet
+(|+|) = BinaryTerm Plus
+infixl 7 |-|
 (|-|) :: Term -> Term -> Term
-(|-|) = notImplementedYet
+(|-|) = BinaryTerm Minus
+infixl 8 |*|
 (|*|) :: Term -> Term -> Term
-(|*|) = notImplementedYet
+(|*|) = BinaryTerm Times
 
 -- Заменить переменную `varName` на `replacement`
 -- во всём выражении `expression`
 replaceVar :: String -> Term -> Term -> Term
-replaceVar varName replacement expression = notImplementedYet
+replaceVar varName replacement (Variable v)
+  | varName == v = replacement
+  | otherwise = (Variable v)
+replaceVar varName replacement (IntConstant n) = (IntConstant n)
+replaceVar varName replacement (BinaryTerm op t1 t2) =
+  BinaryTerm op (replaceVar varName replacement t1) (replaceVar varName replacement t2)
 
 -- Посчитать значение выражения `Term`
 -- если оно состоит только из констант
 evaluate :: Term -> Term
-evaluate = notImplementedYet
+evaluate (IntConstant x) = IntConstant x
+evaluate (Variable v) = Variable v
+evaluate (BinaryTerm op t1 t2) =
+  case (op, evaluate t1, evaluate t2) of
+    (Plus, IntConstant x, IntConstant y) -> IntConstant (x + y)
+    (Minus, IntConstant x, IntConstant y) -> IntConstant (x - y)
+    (Times, IntConstant x, IntConstant y) -> IntConstant (x * y)
+    (Plus, t1, t2) -> BinaryTerm Plus t1 t2 
+    (Minus, t1, t2) -> BinaryTerm Minus t1 t2
+    (Times, t1, t2) -> BinaryTerm Times t1 t2 
